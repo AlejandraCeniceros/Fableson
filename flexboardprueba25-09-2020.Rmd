@@ -1,0 +1,166 @@
+---
+title: "Scenathon 2020"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+runtime: shiny
+---
+
+
+
+
+<style>
+.navbar {
+  background-color:#94B046;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    background-color: #2B6974;
+    color: white;
+}
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+  color: white;
+  background-color: #2B6974;
+}
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  background-color: #2B6974;
+}
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: #2B6974;
+}
+</style>
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(datasets)
+data(WorldPhones)
+library(biclust)
+data(BicatYeast)
+set.seed(1)
+res <- biclust(BicatYeast, method=BCPlaid(), verbose=FALSE)
+```
+
+Home
+=======================================================================
+
+### Net Forest Cover Change
+
+```{r, include=FALSE}
+# Shiny module definition (would typically be defined in a separate R script)
+
+# UI function
+worldPhonesUI <- function(id) {
+  ns <- NS(id)
+  fillCol(height = 600, flex = c(NA, 1), 
+    inputPanel(
+      selectInput(ns("region"), "Region:", choices = colnames(WorldPhones))
+    ),
+    plotOutput(ns("phonePlot"), height = "100%")
+  )
+}
+
+# Server function
+worldPhones <- function(input, output, session) {
+  output$phonePlot <- renderPlot({
+    barplot(WorldPhones[,input$region]*1000, 
+            ylab = "Number of Telephones", xlab = "Year")
+  })
+}
+```
+
+```{r}
+# Include the module
+worldPhonesUI("phones")
+callModule(worldPhones, "phones")
+```
+
+
+
+
+
+Scenathon2020
+=======================================================================
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+ selectInput("clusterNum", label = h3("Cluster number"), 
+    choices = list("1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5), 
+    selected = 1)
+```
+
+Microarray data matrix for 80 experiments with Saccharomyces Cerevisiae
+organism extracted from R's `biclust` package.
+
+Sebastian Kaiser, Rodrigo Santamaria, Tatsiana Khamiakova, Martin Sill, Roberto
+  Theron, Luis Quintales, Friedrich Leisch and Ewoud De Troyer. (2015). biclust:
+  BiCluster Algorithms. R package version 1.2.0.
+  http://CRAN.R-project.org/package=biclust
+
+Row
+-----------------------------------------------------------------------
+
+### Heatmap
+    
+```{r}
+
+num <- reactive(as.integer(input$clusterNum))
+
+col = colorRampPalette(c("red", "white", "darkblue"), space="Lab")(10)
+renderPlot({
+    p = par(mai=c(0,0,0,0))
+    heatmapBC(BicatYeast, res, number=num(), xlab="", ylab="",
+      order=TRUE, useRaster=TRUE, col=col)
+    par(p)
+})
+```
+
+
+Row {.tabset}
+-----------------------------------------------------------------------
+
+### Parallel Coordinates
+    
+```{r}
+renderPlot(
+  parallelCoordinates(BicatYeast, res, number=num())
+)
+```
+   
+### Data for Selected Cluster
+
+```{r}
+# only display table for values in cluster 4
+renderTable(
+  BicatYeast[which(res@RowxNumber[, num()]), which(res@NumberxCol[num(), ])]
+)
+```
+
+Layout Tests
+============================================================
+Column 
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+```
+   
+Column {.tabset}
+-------------------------------------
+   
+### Chart 2
+
+```{r}
+```   
+ 
+### Chart 3
+    
+```{r}
+```
