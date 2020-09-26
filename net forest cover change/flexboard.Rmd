@@ -1,0 +1,156 @@
+---
+title: "Scenaton2020"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    runtime: shiny
+    vertical_layout: scroll
+---
+
+
+<style>
+.body{
+background-color:#2B6974;
+}
+.navbar {
+  background-color:#94B046;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    background-color: #2B6974;
+    color: white;
+}
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+  color: white;
+  background-color: #2B6974;
+}
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  background-color: #2B6974;
+}
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: #2B6974;
+}
+
+.h3{
+font-size:40px;
+}
+
+
+</style>
+
+
+```{r global, include=FALSE}
+library(shiny)
+library(ggplot2)
+library(readr)
+library(plotly)
+ALL_ROW_REGIONS <- read_csv("all_row_regions.csv")
+ALL_FABLE_COUNTRIES <- read_csv("all_fable_countries.csv")
+COUNTRIE_REGION <- read_csv("countries_regions.csv")
+```
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+
+Net Forest Cover Change 
+=======================================================
+
+Column {.sidebar}
+-------------------------------------
+```{r}
+
+selectInput("graficaType",
+                        "tipo de grafica:",
+                        choice=list("Group","all row regions","all fable countries"))
+```
+ 
+Column
+-------------------------------------
+    
+### Net Forest Cover Change
+    
+```{r}
+
+
+
+renderPlotly({
+
+        if(input$graficaType=="all row regions")
+        {
+          
+         grafica_1<-ggplot(data=ALL_ROW_REGIONS,aes(x=Year,y=net_forest_change))+
+            geom_bar(stat = "identity", fill="#FFC107",width=3)+
+            geom_point(aes(x=Year,y=GFW_deforestation))+theme_classic()+
+            geom_point(aes(x=Year,y=forest_target),colour="red")+
+            geom_point(aes(x=Year,y=net_forest_change),colour="green")+scale_y_continuous(breaks=seq(0, -17500, -2500)) #Marcas del 0 al -17500, cada -2500.  
+         b<-ggplotly(grafica_1)
+         b
+      
+        }else if(input$graficaType=="all fable countries")
+        {
+          grafica_2<-ggplot(data=ALL_FABLE_COUNTRIES,aes(x=Year,y=aforestation))+
+            geom_bar(stat = "identity", fill="#81C784",width=3)+
+            geom_bar(aes(x=Year,y=forest_loss),stat = "identity", fill="#FFC107",width=3)+theme_classic()+
+            geom_point(aes(x=Year,y=net_forest_change),colour="green")+
+            geom_point(aes(x=Year,y=GFW_deforestation))+
+            geom_point(aes(x=Year,y=forest_target),colour="red")+scale_y_continuous(breaks=seq(60000, -30000, -20000))
+          a<-ggplotly(grafica_2)
+          a
+        }else if(input$graficaType=="Group")
+        {
+          grafico_3<-ggplot(data=COUNTRIE_REGION,aes(x=Year,y=aforestation))+
+  geom_bar(stat = "identity", fill="#81C784",width=3)+
+  geom_bar(aes(x=Year,y=forest_loss),stat = "identity", fill="#FFC107",width=3)+theme_classic()+
+  geom_point(aes(x=Year,y=net_forest_change),colour="green")+
+  geom_point(aes(x=Year,y=GFW_deforestation))+
+  geom_point(aes(x=Year,y=forest_target),colour="red")
+
+grafico_3+scale_y_continuous(breaks=seq(60000, -40000, -20000))
+
+ggplotly(grafico_3)
+        }
+        
+      
+
+    })
+
+```
+    
+
+asdasd
+
+
+Biodiversity
+=========================================
+Column 
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
